@@ -119,7 +119,7 @@ uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_c
     tcgetattr(fd, &options);
 
 
-    cfsetspeed(&options, B115200);	/* Setting baud rate as 115200 */
+    cfsetspeed(&options, B9600);	/* Setting baud rate as 115200 */
     options.c_cflag |= (CLOCAL | CREAD);	/* Enable the receiver and set local mode */
 	debug_info("Setting the Baud Rate.");
 
@@ -179,9 +179,9 @@ int main(int argc, char **argv)
     }
 
     int fd;
-	int ret;
-    uint8_t r_buf[32], w_buf[32];
-	//uint8_t command[20];
+    int ret;
+    uint8_t r_buf[512], w_buf[256];
+    uint8_t command[20];
     /* Opening a serial port */
     fd = open_port(argv[1]);
 	if(fd<0){
@@ -198,7 +198,7 @@ int main(int argc, char **argv)
 	read(fd, r_buf, sizeof(r_buf));
 	printf("Recv: %s\n", r_buf);*/
 	sleep(1);
-	for(int i=0;i<64;i++){
+	/*for(int i=0;i<64;i++){
 		
 		sprintf(w_buf, "CLR(%d);\r\n", i);
 		printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
@@ -224,18 +224,17 @@ int main(int argc, char **argv)
 		}
 		printf("Recv: %s", r_buf);
 		sleep(0.5);
-	}
-	
-	/*while(1){
-		printf("Command :\t");
+	}*/
+//Reading raw data from GPS Module.	
+	while(1){
+		/*printf("Command: ");
 		scanf("%s",command);
-		sprintf(w_buf, "%s\r\n", command);
-		printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
-		write(fd, w_buf, sizeof(w_buf));
-		read(fd, r_buf, sizeof(r_buf));
-		printf("Recv: %s\n", r_buf);
+		sprintf(w_buf, "%s\r", command);
+		printf("Sending: %sSize:%ld\n", w_buf,sizeof(w_buf));
+		write(fd, w_buf, sizeof(w_buf));*/
+		ret = read(fd, r_buf, sizeof(r_buf));
+		printf("\nRev:%s",r_buf);
 	}
-*/
 	
 	close(fd);
     return 0;
