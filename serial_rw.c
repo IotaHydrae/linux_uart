@@ -6,6 +6,7 @@
 #include <termios.h> /* POSIX terminal control definitions */
 #include <stdint.h>  /* Standard typedefs */
 #include <stdlib.h>  /* Standard library */
+#include <time.h>
 #include <sys/ioctl.h>
 
 /*
@@ -179,8 +180,8 @@ int main(int argc, char **argv)
 
     int fd;
 	int ret;
-    uint8_t r_buf[256], w_buf[256];
-	uint8_t c;
+    uint8_t r_buf[32], w_buf[32];
+	//uint8_t command[20];
     /* Opening a serial port */
     fd = open_port(argv[1]);
 	if(fd<0){
@@ -190,26 +191,52 @@ int main(int argc, char **argv)
 
     /* Setting the struct termios */
     set_port(fd, 115200, 8, 'N', 1);
-	
-	printf("Enter a char: ");
-	while (1)
-	{
-		fgets(w_buf, sizeof(w_buf), stdin);
+
+	/*sprintf(w_buf, "%s\r\n", "VER;");
+	printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
+	write(fd, w_buf, sizeof(w_buf));
+	read(fd, r_buf, sizeof(r_buf));
+	printf("Recv: %s\n", r_buf);*/
+	sleep(1);
+	for(int i=0;i<64;i++){
+		
+		sprintf(w_buf, "CLR(%d);\r\n", i);
+		printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
 		write(fd, w_buf, sizeof(w_buf));
-		read(fd, r_buf, sizeof(r_buf));
-		printf("Get: %s\n", r_buf);
-		close(fd);
-		break;
-		/*scanf("%c", &c);
-		ret=write(fd, &c, 1);
-		ret=read(fd, &c, 1);
-		if(ret==1){
-			printf("Get: %c\n", c);
-			close(fd);
-			break;
-		}*/
+		ret = read(fd, r_buf, sizeof(r_buf));
+		while(r_buf[0]!='O');
+		{
+			printf("Command ok!run next.\n");
+		}
+		printf("Recv: %s", r_buf);
+		sleep(0.5);
 	}
 
-    
+	for(int i=0;i<64;i++){
+		
+		sprintf(w_buf, "BOX(0,0,%d,160,%d);\r\n", i*2,i);
+		printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
+		write(fd, w_buf, sizeof(w_buf));
+		ret = read(fd, r_buf, sizeof(r_buf));
+		while(r_buf[0]!='O');
+		{
+			printf("Command ok!run next.\n");
+		}
+		printf("Recv: %s", r_buf);
+		sleep(0.5);
+	}
+	
+	/*while(1){
+		printf("Command :\t");
+		scanf("%s",command);
+		sprintf(w_buf, "%s\r\n", command);
+		printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
+		write(fd, w_buf, sizeof(w_buf));
+		read(fd, r_buf, sizeof(r_buf));
+		printf("Recv: %s\n", r_buf);
+	}
+*/
+	
+	close(fd);
     return 0;
 }
