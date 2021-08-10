@@ -29,6 +29,11 @@
 
 #define BAUD(b)(B##b)
 
+/*
+ * `check_if_supported` - set the baud rate
+ *
+ * Return 0 on success or -1 on error.
+ */
 static inline uint8_t check_if_supported(const uint32_t *src, uint32_t target)
 {
     while(src!=NULL) {
@@ -85,6 +90,11 @@ uint8_t set_baud_rate(struct termios *options, const uint32_t baud_rate)
     return 0;
 }
 
+/*
+ * `set_character_size` - set the baud rate
+ *
+ * Return 0 on success or -1 on error.
+ */
 uint8_t set_character_size(struct termios *options, uint8_t data_bit)
 {
     uint8_t supported_data_bit_length[] = {
@@ -96,26 +106,51 @@ uint8_t set_character_size(struct termios *options, uint8_t data_bit)
     return 0;
 }
 
+/*
+ * `set_parity_checking` - set the baud rate
+ *
+ * Return 0 on success or -1 on error.
+ */
 uint8_t set_parity_checking()
 {
     return 0;
 }
 
+/*
+ * `set_hardware_flow_control` - set the baud rate
+ *
+ * Return 0 on success or -1 on error.
+ */
 uint8_t set_hardware_flow_control()
 {
     return 0;
 }
 
+/*
+ * `set_software_flow_control` - set the baud rate
+ *
+ * Return 0 on success or -1 on error.
+ */
 uint8_t set_software_flow_control()
 {
     return 0;
 }
 
+/*
+ * `set_io_mode` - set the baud rate
+ *
+ * Return 0 on success or -1 on error.
+ */
 uint8_t set_io_mode()
 {
     return 0;
 }
 
+/*
+ * `set_read_timeouts` - set the baud rate
+ *
+ * Return 0 on success or -1 on error.
+ */
 uint8_t set_read_timeouts()
 {
     return 0;
@@ -150,6 +185,11 @@ int open_port(char *port)
     return fd;
 }
 
+/*
+ * `set_port` - set the port
+ *
+ * Return 0 on success or -1 on error.
+ */
 uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_checking, uint8_t stop_bit)
 {
 	int ret;
