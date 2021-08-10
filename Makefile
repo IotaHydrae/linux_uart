@@ -1,10 +1,11 @@
-CSRCS:=$(shell find -L `pwd` -name *.c)
+CSRCS:=$(shell find -L `pwd` -name "*.c")
 OBJS :=$(patsubst %.c,%.o,$(CSRCS))
 OUTPUT :=$(basename $(CSRCS))
 
 all:
+	@echo $(CSRCS)
 	@echo $(OUTPUT)
-	gcc $(foreach c,$(CSRCS),$(c)) -o $(foreach e,$(OUTPUT),$(e))
+	$(foreach c,$(CSRCS),$(shell gcc $(c) -o $(basename $(c))))
 
 .PHONY:clean
 
