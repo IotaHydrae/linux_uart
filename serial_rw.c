@@ -18,37 +18,69 @@
 #define DEFAULT_PAIRTY	  'N'
 #define DEFAULT_STOP_BIT  1
 
+#define DEBUG
+
+#ifdef DEBUG
 #define debug_info(msg)fprintf(stderr,"%s: %s\n",__func__,msg)
-#define BAUD(ori)(B##ori)
+#else
+#define debug_info(msg)
+#endif
+
+
+#define BAUD(b)(B##b)
+
+static inline uint8_t check_if_supported(const uint32_t *src, uint32_t target)
+{
+    while(src!=NULL) {
+        if(*src==target)return 0;
+        else src++;
+    }
+    return -1;
+}
 
 /*
  * `set_baud_rate` - set the baud rate
  *
  * Return 0 on success or -1 on error.
  */
-uint8_t set_baud_rate(struct termios *options, uint32_t baud_rate)
+uint8_t set_baud_rate(struct termios *options, const uint32_t baud_rate)
 {
+	int ret;
 
-    uint32_t supported_baud_rate_list[] = {
+    const uint32_t supported_baud_rate_list[] = {
         9600,
         19200,
         38400,
         57600,
         115200,
     };
+
+    /*do Fast check*/
+    ret = check_if_supported(supported_baud_rate_list, baud_rate);
+	if(ret<0){
+		return -1;
+	}
+	debug_info("Have match the baud rate. Setting it...");
     /* Setting the Baud Rate. */
-    for(int i=0; i<sizeof(supported_baud_rate_list)/sizeof(uint32_t); i++) {
-        if(baud_rate == supported_baud_rate_list[i]) {
-            debug_info("Have match the baud rate.");
-            break;
-        } else {
-            return -1;
-        }
-    }
-
-    cfsetspeed(options, BAUD(115200));
     switch(baud_rate) {
-
+    default:
+        cfsetspeed(options, BAUD(115200));
+        break;
+    case 9600:
+        cfsetspeed(options, BAUD(9600));
+        break;
+    case 19200:
+        cfsetspeed(options, BAUD(19200));
+        break;
+    case 38400:
+        cfsetspeed(options, BAUD(38400));
+        break;
+    case 57600:
+        cfsetspeed(options, BAUD(57600));
+        break;
+    case 115200:
+        cfsetspeed(options, BAUD(115200));
+        break;
     }
     return 0;
 }
@@ -56,8 +88,10 @@ uint8_t set_baud_rate(struct termios *options, uint32_t baud_rate)
 uint8_t set_character_size(struct termios *options, uint8_t data_bit)
 {
     uint8_t supported_data_bit_length[] = {
-
+        7,
+        8,
     };
+
 
     return 0;
 }
@@ -118,13 +152,19 @@ int open_port(char *port)
 
 uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_checking, uint8_t stop_bit)
 {
+	int ret;
     struct termios options;
     tcgetattr(fd, &options);
 
 
-    cfsetspeed(&options, B9600);	/* Setting baud rate as in */
+//    cfsetspeed(&options, B9600);	/* Setting baud rate as in */
+    ret = set_baud_rate(&options, 9600);
+	if(ret<0){
+		debug_info("Error: Have not match the baud rate!");
+		return -1;
+	}
     options.c_cflag |= (CLOCAL | CREAD);	/* Enable the receiver and set local mode */
-    debug_info("Setting the Baud Rate.");
+
 
     /* Setting the Character Size. */
     options.c_cflag &= ~CSIZE;		/* Mask the chracter size bits */
@@ -177,29 +217,26 @@ int main(int argc, char **argv)
 {
     /* Usage: ./serial_sw <ttyN> text */
     if(argc < 2) {
-        printf("Usage: ./serial_sw <ttyN> <data>\n");
+        printf("Usage: ./serial_sw <tty>|<ttyS>|<ttyUSB> [data]\n");
         return -1;
     }
 
     int fd;
-    <<<<<<< HEAD
     int ret;
-    uint8_t r_buf[64], w_buf[64];
+    uint8_t r_buf[512], w_buf[64];
     uint8_t command[20];
-    =======
-        int ret;
-    uint8_t r_buf[512], w_buf[256];
-    uint8_t command[20];
-    >>>>>>> b2aebf39f29b49ca1a574bab5ff244acb264dde5
     /* Opening a serial port */
     fd = open_port(argv[1]);
     if(fd<0) {
-        debug_info("Error on opening port,");
+        debug_info("Error on opening port.");
         return -1;
     }
 
     /* Setting the struct termios */
-    set_port(fd, 115200, 8, 'N', 1);
+    ret = set_port(fd, 115200, 8, 'N', 1);
+	if(ret<0){
+		debug_info("Error on setting port.");
+	}
 
     /*sprintf(w_buf, "%s\r\n", "VER;");
     printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
@@ -234,20 +271,7 @@ int main(int argc, char **argv)
     	printf("Recv: %s", r_buf);
     	sleep(0.5);
     }*/
-    <<<<<<< HEAD
 
-    while(1) {
-        printf("Command:  ");
-        scanf("%s",command);
-        sprintf(w_buf, "%s\r\n", command);
-        printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
-        write(fd, w_buf, sizeof(w_buf));
-        read(fd, r_buf, sizeof(r_buf));
-        printf("Recv: %s\n", r_buf);
-        break;
-    }
-
-    =======
 //Reading raw data from GPS Module.
     while(1) {
         /*printf("Command: ");
@@ -258,8 +282,6 @@ int main(int argc, char **argv)
         ret = read(fd, r_buf, sizeof(r_buf));
         printf("\nRev:%s",r_buf);
     }
-
-    >>>>>>> b2aebf39f29b49ca1a574bab5ff244acb264dde5
     close(fd);
     return 0;
 }
