@@ -29,59 +29,62 @@
 uint8_t set_baud_rate(struct termios *options, uint32_t baud_rate)
 {
 
-	uint32_t supported_baud_rate_list[] = {
-		9600,
-		19200,
-		38400,
-		57600,
-		115200,
-	};
+    uint32_t supported_baud_rate_list[] = {
+        9600,
+        19200,
+        38400,
+        57600,
+        115200,
+    };
     /* Setting the Baud Rate. */
-	for(int i=0;i<sizeof(supported_baud_rate_list)/sizeof(uint32_t);i++){
-		if(baud_rate == supported_baud_rate_list[i]){
-			debug_info("Have match the baud rate.");
-			break;
-		}else{
-			return -1;
-		}
-	}
-	
-	cfsetspeed(options, BAUD(115200));
-	return 0;
+    for(int i=0; i<sizeof(supported_baud_rate_list)/sizeof(uint32_t); i++) {
+        if(baud_rate == supported_baud_rate_list[i]) {
+            debug_info("Have match the baud rate.");
+            break;
+        } else {
+            return -1;
+        }
+    }
+
+    cfsetspeed(options, BAUD(115200));
+    switch(baud_rate) {
+
+    }
+    return 0;
 }
 
 uint8_t set_character_size(struct termios *options, uint8_t data_bit)
 {
-	uint8_t supported_data_bit_length[] = {
-		
-	};
+    uint8_t supported_data_bit_length[] = {
 
-	return 0;
+    };
+
+    return 0;
 }
 
 uint8_t set_parity_checking()
 {
-	return 0;
+    return 0;
 }
 
 uint8_t set_hardware_flow_control()
 {
-	return 0;
+    return 0;
 }
 
 uint8_t set_software_flow_control()
 {
-	return 0;
+    return 0;
 }
 
 uint8_t set_io_mode()
 {
-	return 0;
+    return 0;
 }
 
 uint8_t set_read_timeouts()
 {
-	return 0;
+    return 0;
 }
 
 
@@ -93,7 +96,7 @@ uint8_t set_read_timeouts()
 int open_port(char *port)
 {
     int fd; /* File descriptor for this port */
-	int status;
+    int status;
 
     //fd = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
     fd = open(port, O_RDWR | O_NOCTTY);
@@ -103,13 +106,13 @@ int open_port(char *port)
     } else {
         status = fcntl(fd, F_SETFL, 0);
     }
-	if(status < 0){
-		debug_info("fcntl failed!");
-		return -1;
-	}
+    if(status < 0) {
+        debug_info("fcntl failed!");
+        return -1;
+    }
 
-	ioctl(fd, TCOFLUSH, &status);
-	
+    ioctl(fd, TCOFLUSH, &status);
+
     return fd;
 }
 
@@ -119,54 +122,54 @@ uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_c
     tcgetattr(fd, &options);
 
 
-    cfsetspeed(&options, B9600);	/* Setting baud rate as 115200 */
+    cfsetspeed(&options, B9600);	/* Setting baud rate as in */
     options.c_cflag |= (CLOCAL | CREAD);	/* Enable the receiver and set local mode */
-	debug_info("Setting the Baud Rate.");
+    debug_info("Setting the Baud Rate.");
 
     /* Setting the Character Size. */
     options.c_cflag &= ~CSIZE;		/* Mask the chracter size bits */
     options.c_cflag |= CS8;			/* 8 data bits */
-	debug_info("Setting the Character Size.");
+    debug_info("Setting the Character Size.");
 
-	/* Setting Parity Checking */
-	options.c_cflag &= ~PARENB;		/* Disable parity bit */
+    /* Setting Parity Checking */
+    options.c_cflag &= ~PARENB;		/* Disable parity bit */
     options.c_cflag &= ~CSTOPB;		/* Setting stop bits to 1 */
-	debug_info("Setting Parity Checking.");
+    debug_info("Setting Parity Checking.");
 
     /* Setting Hardware Flow Control. */
     options.c_cflag &= ~CRTSCTS;	/* Disable hardware flow control. */
-	debug_info("Setting Hardware Flow Control.");
+    debug_info("Setting Hardware Flow Control.");
 
     /* Choosing Raw Input&Output */
     options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-	/*
-	 * When OPOST option is disabled, all other option
-	 * bits in c_oflag are ignored.
-	 */
-	options.c_oflag	&= ~OPOST;	
-	debug_info("Choosing Raw Input&Output.");
+    /*
+     * When OPOST option is disabled, all other option
+     * bits in c_oflag are ignored.
+     */
+    options.c_oflag	&= ~OPOST;
+    debug_info("Choosing Raw Input&Output.");
 
-	/* Setting Software Flow Control */
-	//options.c_iflag &= ~(IXON | IXOFF | IXANY);		/* Disable software flow control. */
-	//debug_info("Setting Software Flow Control.");
+    /* Setting Software Flow Control */
+    //options.c_iflag &= ~(IXON | IXOFF | IXANY);		/* Disable software flow control. */
+    //debug_info("Setting Software Flow Control.");
 
-	/* 
-	 * Setting Read Timeouts
-	 * Timeouts are ignored in canonical input mode
-	 * or when the NDELAY option is set on the file
-	 * via open or fcntl.
-	 */
-	options.c_cc[VTIME] = 0;
-	options.c_cc[VMIN]  = 1;
-	debug_info("Setting Read Timeouts.");
+    /*
+     * Setting Read Timeouts
+     * Timeouts are ignored in canonical input mode
+     * or when the NDELAY option is set on the file
+     * via open or fcntl.
+     */
+    options.c_cc[VTIME] = 0;
+    options.c_cc[VMIN]  = 1;
+    debug_info("Setting Read Timeouts.");
 
-	tcflush(fd,TCIFLUSH);
+    tcflush(fd,TCIFLUSH);
 
-	/* 
-	 *	TCSANOW: Make change now without waiting for data to complete. 
-	 */
-    tcsetattr(fd, TCSANOW, &options);	
-	debug_info("Making options effect.");
+    /*
+     *	TCSANOW: Make change now without waiting for data to complete.
+     */
+    tcsetattr(fd, TCSANOW, &options);
+    debug_info("Making options effect.");
 
 }
 
@@ -179,64 +182,84 @@ int main(int argc, char **argv)
     }
 
     int fd;
-	int ret;
+    <<<<<<< HEAD
+    int ret;
     uint8_t r_buf[64], w_buf[64];
-	uint8_t command[20];
+    uint8_t command[20];
+    =======
+        int ret;
+    uint8_t r_buf[512], w_buf[256];
+    uint8_t command[20];
+    >>>>>>> b2aebf39f29b49ca1a574bab5ff244acb264dde5
     /* Opening a serial port */
     fd = open_port(argv[1]);
-	if(fd<0){
-		debug_info("Error on opening port,");
-		return -1;
-	}
+    if(fd<0) {
+        debug_info("Error on opening port,");
+        return -1;
+    }
 
     /* Setting the struct termios */
     set_port(fd, 115200, 8, 'N', 1);
 
-	/*sprintf(w_buf, "%s\r\n", "VER;");
-	printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
-	write(fd, w_buf, sizeof(w_buf));
-	read(fd, r_buf, sizeof(r_buf));
-	printf("Recv: %s\n", r_buf);*/
-	sleep(1);
-	/*for(int i=0;i<64;i++){
-		
-		sprintf(w_buf, "CLR(%d);\r\n", i);
-		printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
-		write(fd, w_buf, sizeof(w_buf));
-		ret = read(fd, r_buf, sizeof(r_buf));
-		while(r_buf[0]!='O');
-		{
-			printf("Command ok!run next.\n");
-		}
-		printf("Recv: %s", r_buf);
-		sleep(0.5);
-	}
+    /*sprintf(w_buf, "%s\r\n", "VER;");
+    printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
+    write(fd, w_buf, sizeof(w_buf));
+    read(fd, r_buf, sizeof(r_buf));
+    printf("Recv: %s\n", r_buf);*/
+    sleep(1);
+    /*for(int i=0;i<64;i++){
 
-	for(int i=0;i<64;i++){
-		
-		sprintf(w_buf, "BOX(0,0,%d,160,%d);\r\n", i*2,i);
-		printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
-		write(fd, w_buf, sizeof(w_buf));
-		ret = read(fd, r_buf, sizeof(r_buf));
-		while(r_buf[0]!='O');
-		{
-			printf("Command ok!run next.\n");
-		}
-		printf("Recv: %s", r_buf);
-		sleep(0.5);
-	}*/
-	
-	while(1){
-		printf("Command:  ");
-		scanf("%s",command);
-		sprintf(w_buf, "%s\r\n", command);
-		printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
-		write(fd, w_buf, sizeof(w_buf));
-		read(fd, r_buf, sizeof(r_buf));
-		printf("Recv: %s\n", r_buf);
-		break;
-	}
-	
-	close(fd);
+    	sprintf(w_buf, "CLR(%d);\r\n", i);
+    	printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
+    	write(fd, w_buf, sizeof(w_buf));
+    	ret = read(fd, r_buf, sizeof(r_buf));
+    	while(r_buf[0]!='O');
+    	{
+    		printf("Command ok!run next.\n");
+    	}
+    	printf("Recv: %s", r_buf);
+    	sleep(0.5);
+    }
+
+    for(int i=0;i<64;i++){
+
+    	sprintf(w_buf, "BOX(0,0,%d,160,%d);\r\n", i*2,i);
+    	printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
+    	write(fd, w_buf, sizeof(w_buf));
+    	ret = read(fd, r_buf, sizeof(r_buf));
+    	while(r_buf[0]!='O');
+    	{
+    		printf("Command ok!run next.\n");
+    	}
+    	printf("Recv: %s", r_buf);
+    	sleep(0.5);
+    }*/
+    <<<<<<< HEAD
+
+    while(1) {
+        printf("Command:  ");
+        scanf("%s",command);
+        sprintf(w_buf, "%s\r\n", command);
+        printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
+        write(fd, w_buf, sizeof(w_buf));
+        read(fd, r_buf, sizeof(r_buf));
+        printf("Recv: %s\n", r_buf);
+        break;
+    }
+
+    =======
+//Reading raw data from GPS Module.
+    while(1) {
+        /*printf("Command: ");
+        scanf("%s",command);
+        sprintf(w_buf, "%s\r", command);
+        printf("Sending: %sSize:%ld\n", w_buf,sizeof(w_buf));
+        write(fd, w_buf, sizeof(w_buf));*/
+        ret = read(fd, r_buf, sizeof(r_buf));
+        printf("\nRev:%s",r_buf);
+    }
+
+    >>>>>>> b2aebf39f29b49ca1a574bab5ff244acb264dde5
+    close(fd);
     return 0;
 }
