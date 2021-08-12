@@ -34,22 +34,21 @@
 /*
  * Default define values.
  */
-#define DEFAULT_TTY_PORT  "/dev/ttyUSB0"
+#define DEFAULT_TTY_PORT "/dev/ttyUSB0"
 #define DEFAULT_BAUD_RATE 115200
-#define DEFAULT_DATA_BIT  8
-#define DEFAULT_PAIRTY	  'N'
-#define DEFAULT_STOP_BIT  1
+#define DEFAULT_DATA_BIT 8
+#define DEFAULT_PAIRTY 'N'
+#define DEFAULT_STOP_BIT 1
 
 #define DEBUG
 
 #ifdef DEBUG
-#define debug_info(msg)fprintf(stderr,"%s: %s\n",__func__,msg)
+#define debug_info(msg) fprintf(stderr, "%s: %s\n", __func__, msg)
 #else
 #define debug_info(msg)
 #endif
 
-
-#define BAUD(b)(B##b)
+#define BAUD(b) (B##b)
 
 /*
  * `check_if_supported` - set the baud rate
@@ -59,9 +58,12 @@
  */
 static inline uint8_t check_if_supported(const uint32_t *src, uint32_t target)
 {
-    while(src!=NULL) {
-        if(*src==target)return 0;
-        else src++;
+    while (src != NULL)
+    {
+        if (*src == target)
+            return 0;
+        else
+            src++;
     }
     return -1;
 }
@@ -74,7 +76,7 @@ static inline uint8_t check_if_supported(const uint32_t *src, uint32_t target)
  */
 uint8_t set_baud_rate(struct termios *options, const uint32_t baud_rate)
 {
-	int ret;
+    int ret;
 
     const uint32_t supported_baud_rate_list[] = {
         9600,
@@ -86,12 +88,14 @@ uint8_t set_baud_rate(struct termios *options, const uint32_t baud_rate)
 
     /*do Fast check*/
     ret = check_if_supported(supported_baud_rate_list, baud_rate);
-	if(ret<0){
-		return -1;
-	}
-	debug_info("Have match the baud rate. Setting it...");
+    if (ret < 0)
+    {
+        return -1;
+    }
+    debug_info("Have match the baud rate. Setting it...");
     /* Setting the Baud Rate. */
-    switch(baud_rate) {
+    switch (baud_rate)
+    {
     default:
         cfsetspeed(options, BAUD(115200));
         break;
@@ -111,7 +115,7 @@ uint8_t set_baud_rate(struct termios *options, const uint32_t baud_rate)
         cfsetspeed(options, BAUD(115200));
         break;
     }
-    
+
     return 0;
 }
 
@@ -121,30 +125,32 @@ uint8_t set_baud_rate(struct termios *options, const uint32_t baud_rate)
  * Return 0 on success or -1 on error.
  */
 uint8_t set_data_length(struct termios *options, uint8_t length)
-{ 
-	int ret;
+{
+    int ret;
     uint8_t supported_data_bit_length[] = {
         7,
         8,
     };
     ret = check_if_supported(supported_data_bit_length, length);
-    if(ret<0){
-		return -1;
+    if (ret < 0)
+    {
+        return -1;
     }
     debug_info("Have match the data bit length, Setting it...");
-    
-    switch(length){
-	default:
-		options.c_cflag |= CS8;			/* 8 data bits */
-		break;
-	case 7:
-	    options.c_cflag |= CS7;			/* 7 data bits */
-	    break;
-	case 8:
-	    options.c_cflag |= CS8;			/* 8 data bits */
-	    break;
+
+    switch (length)
+    {
+    default:
+        options.c_cflag |= CS8; /* 8 data bits */
+        break;
+    case 7:
+        options.c_cflag |= CS7; /* 7 data bits */
+        break;
+    case 8:
+        options.c_cflag |= CS8; /* 8 data bits */
+        break;
     }
-   
+
     return 0;
 }
 
@@ -155,15 +161,20 @@ uint8_t set_data_length(struct termios *options, uint8_t length)
  */
 uint8_t set_parity(struct termios *options, bool enable)
 {
-	if(enable){
-		options.c_cflag |= PARENB;		/* Enable parity bit */
-	}else if(!enable){
-		options.c_cflag &= ~PARENB;		/* Disable parity bit */
-	}else{
-		/* Default for disable. */
-		options.c_cflag &= ~PARENB;		/* Disable parity bit */
-	}
-	
+    if (enable)
+    {
+        options.c_cflag |= PARENB; /* Enable parity bit */
+    }
+    else if (!enable)
+    {
+        options.c_cflag &= ~PARENB; /* Disable parity bit */
+    }
+    else
+    {
+        /* Default for disable. */
+        options.c_cflag &= ~PARENB; /* Disable parity bit */
+    }
+
     return 0;
 }
 
@@ -174,12 +185,18 @@ uint8_t set_parity(struct termios *options, bool enable)
  */
 uint8_t set_stop_bit(struct termios *options, uint8_t length)
 {
-	if(length==1){
-		options.c_cflag &= ~CSTOPB;		/* Setting stop bits to 1 */
-	}else if(length==2){
-		options.c_cflag |= CSTOPB;		/* Setting stop bits to 1 */		
-	}else{}
-	
+    if (length == 1)
+    {
+        options.c_cflag &= ~CSTOPB; /* Setting stop bits to 1 */
+    }
+    else if (length == 2)
+    {
+        options.c_cflag |= CSTOPB; /* Setting stop bits to 1 */
+    }
+    else
+    {
+    }
+
     return 0;
 }
 
@@ -188,8 +205,19 @@ uint8_t set_stop_bit(struct termios *options, uint8_t length)
  *
  * Return 0 on success or -1 on error.
  */
-uint8_t set_hardware_flow_control()
+uint8_t set_hardware_flow_control(struct termios *options, bool enable)
 {
+    if (enable)
+    {
+        options.c_cflag |= CRTSCTS; /* Enable hardware flow control. */
+    }
+    else if (!enable)
+    {
+        options.c_cflag &= ~CRTSCTS; /* Disable hardware flow control. */
+    }
+    else
+    {
+    }
     return 0;
 }
 
@@ -223,7 +251,6 @@ uint8_t set_read_timeouts()
     return 0;
 }
 
-
 /*
 * `open_port(char *port)` - Open the port
 *
@@ -236,13 +263,17 @@ int open_port(char *port)
 
     //fd = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
     fd = open(port, O_RDWR | O_NOCTTY);
-    if(fd == -1) {
+    if (fd == -1)
+    {
         /* Could not open the port */
         perror("open_port: Unable to open port");
-    } else {
+    }
+    else
+    {
         status = fcntl(fd, F_SETFL, 0);
     }
-    if(status < 0) {
+    if (status < 0)
+    {
         debug_info("fcntl failed!");
         return -1;
     }
@@ -259,33 +290,31 @@ int open_port(char *port)
  */
 uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_checking, uint8_t stop_bit)
 {
-	int ret;
+    int ret;
     struct termios options;
     tcgetattr(fd, &options);
 
-
-//    cfsetspeed(&options, B9600);	/* Setting baud rate as in */
+    //    cfsetspeed(&options, B9600);	/* Setting baud rate as in */
     ret = set_baud_rate(&options, 9600);
-	if(ret<0){
-		debug_info("Error: Have not match the baud rate!");
-		return -1;
-	}
-    options.c_cflag |= (CLOCAL | CREAD);	/* Enable the receiver and set local mode */
-
+    if (ret < 0)
+    {
+        debug_info("Error: Have not match the baud rate!");
+        return -1;
+    }
+    options.c_cflag |= (CLOCAL | CREAD); /* Enable the receiver and set local mode */
 
     /* Setting the Character Size. */
-    options.c_cflag &= ~CSIZE;		/* Mask the chracter size bits */
-    options.c_cflag |= CS8;			/* 8 data bits */
+    options.c_cflag &= ~CSIZE; /* Mask the chracter size bits */
+    options.c_cflag |= CS8;    /* 8 data bits */
     debug_info("Setting the Character Size.");
 
-
     /* Setting Parity Checking */
-    options.c_cflag &= ~PARENB;		/* Disable parity bit */
-    options.c_cflag &= ~CSTOPB;		/* Setting stop bits to 1 */
+    options.c_cflag &= ~PARENB; /* Disable parity bit */
+    options.c_cflag &= ~CSTOPB; /* Setting stop bits to 1 */
     debug_info("Setting Parity Checking.");
 
     /* Setting Hardware Flow Control. */
-    options.c_cflag &= ~CRTSCTS;	/* Disable hardware flow control. */
+    options.c_cflag &= ~CRTSCTS; /* Disable hardware flow control. */
     debug_info("Setting Hardware Flow Control.");
 
     /* Choosing Raw Input&Output */
@@ -294,11 +323,11 @@ uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_c
      * When OPOST option is disabled, all other option
      * bits in c_oflag are ignored.
      */
-    options.c_oflag	&= ~OPOST;
+    options.c_oflag &= ~OPOST;
     debug_info("Choosing Raw Input&Output.");
 
     /* Setting Software Flow Control */
-    options.c_iflag &= ~(IXON | IXOFF | IXANY);		/* Disable software flow control. */
+    options.c_iflag &= ~(IXON | IXOFF | IXANY); /* Disable software flow control. */
     debug_info("Setting Software Flow Control.");
 
     /*
@@ -308,10 +337,10 @@ uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_c
      * via open or fcntl.
      */
     options.c_cc[VTIME] = 0;
-    options.c_cc[VMIN]  = 1;
+    options.c_cc[VMIN] = 1;
     debug_info("Setting Read Timeouts.");
 
-    tcflush(fd,TCIFLUSH);
+    tcflush(fd, TCIFLUSH);
 
     /*
      * TCSANOW
@@ -319,7 +348,6 @@ uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_c
      */
     tcsetattr(fd, TCSANOW, &options);
     debug_info("Making options effect.");
-
 }
 
 /*
@@ -329,10 +357,10 @@ uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_c
  */
 void serial_rw_help(void)
 {
-	/*
+    /*
      * FULL usage for newers.
 	 */
-	 printf("
+     printf("
 		Usage: serial_rw [<tty>|<ttyS>|<ttyUSB>] [data] [-f <file>]\n
 		[-s <baud-rate>] [-]\n
 		\n
@@ -340,13 +368,13 @@ void serial_rw_help(void)
 		\n
 		
 	 ");
-	 
 }
 
 int main(int argc, char **argv)
 {
     /* Usage: ./serial_sw <ttyN> text */
-    if(argc < 2) {
+    if (argc < 2)
+    {
         printf("Usage: ./serial_sw <tty>|<ttyS>|<ttyUSB> [data]\n
         		try '--help' for more info.");
         return -1;
@@ -358,23 +386,25 @@ int main(int argc, char **argv)
     uint8_t command[20];
     /* Opening a serial port */
     fd = open_port(argv[1]);
-    if(fd<0) {
+    if (fd < 0)
+    {
         debug_info("Error on opening port.");
         return -1;
     }
 
     /* Setting the struct termios */
     ret = set_port(fd, 115200, 8, 'N', 1);
-	if(ret<0){
-		debug_info("Error on setting port.");
-	}
+    if (ret < 0)
+    {
+        debug_info("Error on setting port.");
+    }
 
     /*sprintf(w_buf, "%s\r\n", "VER;");
     printf("Sending: %s \nSize:%ld\n", w_buf,sizeof(w_buf));
     write(fd, w_buf, sizeof(w_buf));
     read(fd, r_buf, sizeof(r_buf));
     printf("Recv: %s\n", r_buf);*/
-    sleep(1);
+    // sleep(1);
     /*for(int i=0;i<64;i++){
 
     	sprintf(w_buf, "CLR(%d);\r\n", i);
@@ -403,15 +433,16 @@ int main(int argc, char **argv)
     	sleep(0.5);
     }*/
 
-//Reading raw data from GPS Module.
-    while(1) {
+    //Reading raw data from GPS Module.
+    while (1)
+    {
         /*printf("Command: ");
         scanf("%s",command);
         sprintf(w_buf, "%s\r", command);
         printf("Sending: %sSize:%ld\n", w_buf,sizeof(w_buf));
         write(fd, w_buf, sizeof(w_buf));*/
         ret = read(fd, r_buf, sizeof(r_buf));
-        printf("\nRev:%s",r_buf);
+        printf("\nRev:%s", r_buf);
     }
     close(fd);
     return 0;
