@@ -58,8 +58,7 @@
  */
 static inline uint8_t check_if_supported(const uint32_t *src, uint32_t target)
 {
-    while (src != NULL)
-    {
+    while (src != NULL) {
         if (*src == target)
             return 0;
         else
@@ -88,14 +87,12 @@ uint8_t set_baud_rate(struct termios *options, const uint32_t baud_rate)
 
     /*do Fast check*/
     ret = check_if_supported(supported_baud_rate_list, baud_rate);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         return -1;
     }
     debug_info("Have match the baud rate. Setting it...");
     /* Setting the Baud Rate. */
-    switch (baud_rate)
-    {
+    switch (baud_rate) {
     default:
         cfsetspeed(options, BAUD(115200));
         break;
@@ -132,14 +129,12 @@ uint8_t set_data_length(struct termios *options, uint8_t length)
         8,
     };
     ret = check_if_supported(supported_data_bit_length, length);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         return -1;
     }
     debug_info("Have match the data bit length, Setting it...");
 
-    switch (length)
-    {
+    switch (length) {
     default:
         options.c_cflag |= CS8; /* 8 data bits */
         break;
@@ -161,16 +156,11 @@ uint8_t set_data_length(struct termios *options, uint8_t length)
  */
 uint8_t set_parity(struct termios *options, bool enable)
 {
-    if (enable)
-    {
+    if (enable) {
         options.c_cflag |= PARENB; /* Enable parity bit */
-    }
-    else if (!enable)
-    {
+    } else if (!enable) {
         options.c_cflag &= ~PARENB; /* Disable parity bit */
-    }
-    else
-    {
+    } else {
         /* Default for disable. */
         options.c_cflag &= ~PARENB; /* Disable parity bit */
     }
@@ -185,16 +175,11 @@ uint8_t set_parity(struct termios *options, bool enable)
  */
 uint8_t set_stop_bit(struct termios *options, uint8_t length)
 {
-    if (length == 1)
-    {
+    if (length == 1) {
         options.c_cflag &= ~CSTOPB; /* Setting stop bits to 1 */
-    }
-    else if (length == 2)
-    {
+    } else if (length == 2) {
         options.c_cflag |= CSTOPB; /* Setting stop bits to 1 */
-    }
-    else
-    {
+    } else {
     }
 
     return 0;
@@ -207,16 +192,11 @@ uint8_t set_stop_bit(struct termios *options, uint8_t length)
  */
 uint8_t set_hardware_flow_control(struct termios *options, bool enable)
 {
-    if (enable)
-    {
+    if (enable) {
         options.c_cflag |= CRTSCTS; /* Enable hardware flow control. */
-    }
-    else if (!enable)
-    {
+    } else if (!enable) {
         options.c_cflag &= ~CRTSCTS; /* Disable hardware flow control. */
-    }
-    else
-    {
+    } else {
     }
     return 0;
 }
@@ -263,17 +243,13 @@ int open_port(char *port)
 
     //fd = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
     fd = open(port, O_RDWR | O_NOCTTY);
-    if (fd == -1)
-    {
+    if (fd == -1) {
         /* Could not open the port */
         perror("open_port: Unable to open port");
-    }
-    else
-    {
+    } else {
         status = fcntl(fd, F_SETFL, 0);
     }
-    if (status < 0)
-    {
+    if (status < 0) {
         debug_info("fcntl failed!");
         return -1;
     }
@@ -296,8 +272,7 @@ uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_c
 
     //    cfsetspeed(&options, B9600);	/* Setting baud rate as in */
     ret = set_baud_rate(&options, 9600);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         debug_info("Error: Have not match the baud rate!");
         return -1;
     }
@@ -359,43 +334,40 @@ void serial_rw_help(void)
 {
     /*
      * FULL usage for newers.
-	 */
-     printf("
-		Usage: serial_rw [<tty>|<ttyS>|<ttyUSB>] [data] [-f <file>]\n
-		[-s <baud-rate>] [-]\n
-		\n
-		These commands used in serial_rw:\n
-		\n
-		
-	 ");
+     */
+    printf("
+           Usage: serial_rw [<tty>|<ttyS>|<ttyUSB>] [data] [-f <file>]\n
+           [-s <baud-rate>] [-]\n
+           \n
+           These commands used in serial_rw:\n
+           \n
+
+           ");
 }
 
 int main(int argc, char **argv)
 {
     /* Usage: ./serial_sw <ttyN> text */
-    if (argc < 2)
-    {
+    if (argc < 2) {
         printf("Usage: ./serial_sw <tty>|<ttyS>|<ttyUSB> [data]\n
-        		try '--help' for more info.");
-        return -1;
-    }
+               try '--help' for more info.");
+                   return -1;
+        }
 
-    int fd;
-    int ret;
-    uint8_t r_buf[512], w_buf[64];
+int fd;
+int ret;
+uint8_t r_buf[512], w_buf[64];
     uint8_t command[20];
     /* Opening a serial port */
     fd = open_port(argv[1]);
-    if (fd < 0)
-    {
+    if (fd < 0) {
         debug_info("Error on opening port.");
         return -1;
     }
 
     /* Setting the struct termios */
     ret = set_port(fd, 115200, 8, 'N', 1);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         debug_info("Error on setting port.");
     }
 
@@ -434,8 +406,7 @@ int main(int argc, char **argv)
     }*/
 
     //Reading raw data from GPS Module.
-    while (1)
-    {
+    while (1) {
         /*printf("Command: ");
         scanf("%s",command);
         sprintf(w_buf, "%s\r", command);
