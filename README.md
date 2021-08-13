@@ -49,7 +49,7 @@ $GPTXT,01,01,01,ANTENNA OK*35
 3.  xxxx
 
 #### 使用说明
-
+$(foreach c,$(CSRCS),$(shell gcc $(c) -o $(basename $(c))))
 1.  xxxx
 2.  xxxx
 3.  xxxx
