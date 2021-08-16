@@ -22,7 +22,7 @@ all:
 .PHONY:clean install uninstall distclean
 
 install:
-	
+	cp 
 
 uninstall:
 
