@@ -21,6 +21,28 @@
  */
 #include "uart_utils.h"
 
+#include <stdio.h>   /* Standard input/output definitions */
+#include <string.h>  /* String function definitions */
+#include <unistd.h>  /* UNIX standard function definitions */
+#include <fcntl.h>   /* File control definitions */
+#include <errno.h>   /* Error number definitions */
+#include <termios.h> /* POSIX terminal control definitions */
+#include <stdint.h>  /* Standard typedefs */
+#include <stdlib.h>  /* Standard library */
+#include <time.h>
+#include <sys/ioctl.h>
+
+//#define NODELAY_MODE
+
+#ifdef DEBUG
+#define debug_info(msg) fprintf(stderr, "%s: %s\n", __func__, msg)
+#else
+#define debug_info(msg)
+#endif
+
+#define BAUD(b) (B##b)
+
+
 /**
  * `check_if_supported` - set the baud rate
  *
@@ -92,7 +114,7 @@ uint8_t set_baud_rate(struct termios *options, const uint32_t baud_rate)
         cfsetspeed(options, BAUD(115200));
         break;
     }
-
+    tcsetattr(fd, TCSANOW, options);
     return 0;
 }
 
@@ -125,7 +147,7 @@ uint8_t set_data_length(struct termios *options, uint8_t length)
         options->c_cflag |= CS8; /* 8 data bits */
         break;
     }
-
+    tcsetattr(fd, TCSANOW, options);
     return 0;
 }
 
@@ -188,6 +210,9 @@ uint8_t set_hardware_flow_control(struct termios *options, uint8_t enable)
  */
 uint8_t set_software_flow_control()
 {
+    /* Setting Software Flow Control */
+    options.c_iflag &= ~(IXON | IXOFF | IXANY); /* Disable software flow control. */
+    debug_info("Setting Software Flow Control.");
     return 0;
 }
 
@@ -243,12 +268,12 @@ uint8_t open_port(char *port)
     return fd;
 }
 
-/*
+/**
  * `set_port` - set the port
  *
  * Return 0 on success or -1 on error.
  */
-uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_checking, uint8_t stop_bit)
+uint8_t set_port(int fd, struct uart_config *conf)
 {
     uint32_t ret;
     struct termios options;
@@ -309,7 +334,33 @@ uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_c
     debug_info("Making options effect.");
 }
 
-/*
+static struct uart_config default_uart_config[] = {
+	{ 115200, 8, 'N', 1 },
+};
+/**
+ * `set_port` - set the port
+ *
+ * Return 0 on success or -1 on error.
+ */
+
+
+
+/**
+ * struct termios alloc
+ */
+struct termios *termios_alloc(uint8_t default_mode)
+{
+	struct termios *options;
+
+	options = (struct termios *)malloc(sizeof(struct termios));
+	memset(options, 0, sizeof(struct termios));
+#if INIT_ON_ALLOC
+#endif
+
+	return options;
+}
+
+/**
  * `serial_rw_help` - print the full usage.
  *
  * None returns.
@@ -348,9 +399,14 @@ int main(int argc, char **argv)
         debug_info("Error on opening port.");
         return -1;
     }
+	struct uart_config myconfig;
+	myconfig.baud_rate=115200;
+	myconfig.data_bit=8;
+	myconfig.pairty='N';
+	myconfig.stop_bit=1;
 
     /* Setting the struct termios */
-    ret = set_port(fd, 115200, 8, 'N', 1);
+    ret = set_port(fd, &myconfig);
     if (ret < 0) {
         debug_info("Error on setting port.");
     }

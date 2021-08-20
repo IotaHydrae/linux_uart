@@ -18,41 +18,43 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * Authors: Zheng Hua <writeforever@foxmail.com>
- */
+ */
+
 #ifndef _UART_UTILS_H
 #define _UART_UTILS_H
 
-#include <stdio.h>   /* Standard input/output definitions */
-#include <string.h>  /* String function definitions */
-#include <unistd.h>  /* UNIX standard function definitions */
-#include <fcntl.h>   /* File control definitions */
-#include <errno.h>   /* Error number definitions */
-#include <termios.h> /* POSIX terminal control definitions */
-#include <stdint.h>  /* Standard typedefs */
-#include <stdlib.h>  /* Standard library */
-#include <time.h>
-#include <sys/ioctl.h>
+
  
 /**********************
  *      Defines
  **********************/
+ #ifndef ENABLE_DEFAULT_SETTINGS
+ #define ENABLE_DEFAULT_SETTINGS 1
+ 
 #define DEFAULT_TTY_PORT "/dev/ttyUSB0"
 #define DEFAULT_BAUD_RATE 115200
 #define DEFAULT_DATA_BIT 8
 #define DEFAULT_PAIRTY 'N'
 #define DEFAULT_STOP_BIT 1
 
-#define DEBUG
-
-//#define NODELAY_MODE
-
-#ifdef DEBUG
-#define debug_info(msg) fprintf(stderr, "%s: %s\n", __func__, msg)
-#else
-#define debug_info(msg)
+#define DEFAULT_MODE_1
 #endif
 
-#define BAUD(b) (B##b)
+#ifndef 
+#define INIT_ON_ALLOC 1
+#endif
+
+#ifndef INIT_ON_ALLOC
+#define INIT_ON_ALLOC 1
+#endif
+
+#define DEBUG
+
+/**********************
+ *      Typedefs
+ **********************/
+ typedef uint8_t err_t;
+
 
 /**********************
  *      Struct
@@ -66,6 +68,16 @@ struct uart_config{
 	
 };
 
+struct my_uart_ops{
+	err_t (*open_port)(uint8_t port);
+	err_t (*close_port)(uint32_t fd);
+	uint32_t (*read_port)(uint8_t fd, uint8_t *buf, uint32_t size);
+	uint32_t (*write_port)(uint8_t fd, uint8_t *buf, uint32_t size);
+	err_t (*set_port)(uint8_t fd, struct uart_config *conf);
+	err_t (*set_baud_rate)(struct termios *options, const uint32_t baud_rate);
+	err_t (*set_data_length)(struct termios *options, const uint8_t data_length);
+};
+
 /*struct uart_message{
 	mutex uart_lock;
 	uint8_t *msg_buf_read[512];
@@ -73,19 +85,7 @@ struct uart_config{
 }*/
 
 /**********************
- *      Typedefs
- **********************/
- 
-/**********************
  *      Prototype
  **********************/
 void print_help(void);
-uint8_t open_port(char *port);
-uint8_t set_port(int fd, uint32_t baud_rate, uint8_t data_bits, uint8_t parity_checking, uint8_t stop_bit);
-
-uint8_t set_baud_rate(struct termios *options, const uint32_t baud_rate);
-uint8_t set_data_length(struct termios *options, uint8_t length);
-uint8_t set_parity(struct termios *options, uint8_t enable);
-uint8_t set_stop_bit(struct termios *options, uint8_t length);
-uint8_t set_hardware_flow_control(struct termios *options, uint8_t enable);
 #endif	/* End of _UART_UTILS_H */
