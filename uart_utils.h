@@ -24,13 +24,23 @@
 #define _UART_UTILS_H
 
 
+#include <stdio.h>   /* Standard input/output definitions */
+#include <string.h>  /* String function definitions */
+#include <unistd.h>  /* UNIX standard function definitions */
+#include <fcntl.h>   /* File control definitions */
+#include <errno.h>   /* Error number definitions */
+#include <termios.h> /* POSIX terminal control definitions */
+#include <stdint.h>  /* Standard typedefs */
+#include <stdlib.h>  /* Standard library */
+#include <time.h>
+#include <sys/ioctl.h>
  
 /**********************
  *      Defines
  **********************/
- #ifndef ENABLE_DEFAULT_SETTINGS
- #define ENABLE_DEFAULT_SETTINGS 1
- 
+#ifndef ENABLE_DEFAULT_SETTINGS
+#define ENABLE_DEFAULT_SETTINGS 1
+
 #define DEFAULT_TTY_PORT "/dev/ttyUSB0"
 #define DEFAULT_BAUD_RATE 115200
 #define DEFAULT_DATA_BIT 8
@@ -40,9 +50,6 @@
 #define DEFAULT_MODE_1
 #endif
 
-#ifndef 
-#define INIT_ON_ALLOC 1
-#endif
 
 #ifndef INIT_ON_ALLOC
 #define INIT_ON_ALLOC 1
@@ -63,7 +70,7 @@ struct uart_config{
 	uint8_t *tty_port;
 	uint32_t baud_rate;
 	uint8_t  data_bit;
-	uint8_t *pairty;
+	uint8_t  pairty;
 	uint8_t  stop_bit;
 	
 };
@@ -88,4 +95,7 @@ struct my_uart_ops{
  *      Prototype
  **********************/
 void print_help(void);
+
+uint8_t set_port(int fd, struct uart_config *conf);
+uint8_t open_port(char *port);
 #endif	/* End of _UART_UTILS_H */

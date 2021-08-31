@@ -21,17 +21,6 @@
  */
 #include "uart_utils.h"
 
-#include <stdio.h>   /* Standard input/output definitions */
-#include <string.h>  /* String function definitions */
-#include <unistd.h>  /* UNIX standard function definitions */
-#include <fcntl.h>   /* File control definitions */
-#include <errno.h>   /* Error number definitions */
-#include <termios.h> /* POSIX terminal control definitions */
-#include <stdint.h>  /* Standard typedefs */
-#include <stdlib.h>  /* Standard library */
-#include <time.h>
-#include <sys/ioctl.h>
-
 //#define NODELAY_MODE
 
 #ifdef DEBUG
@@ -114,7 +103,6 @@ uint8_t set_baud_rate(struct termios *options, const uint32_t baud_rate)
         cfsetspeed(options, BAUD(115200));
         break;
     }
-    tcsetattr(fd, TCSANOW, options);
     return 0;
 }
 
@@ -147,7 +135,6 @@ uint8_t set_data_length(struct termios *options, uint8_t length)
         options->c_cflag |= CS8; /* 8 data bits */
         break;
     }
-    tcsetattr(fd, TCSANOW, options);
     return 0;
 }
 
@@ -208,10 +195,10 @@ uint8_t set_hardware_flow_control(struct termios *options, uint8_t enable)
  *
  * Return 0 on success or -1 on error.
  */
-uint8_t set_software_flow_control()
+uint8_t set_software_flow_control(struct termios *options)
 {
     /* Setting Software Flow Control */
-    options.c_iflag &= ~(IXON | IXOFF | IXANY); /* Disable software flow control. */
+    options->c_iflag &= ~(IXON | IXOFF | IXANY); /* Disable software flow control. */
     debug_info("Setting Software Flow Control.");
     return 0;
 }
@@ -335,7 +322,7 @@ uint8_t set_port(int fd, struct uart_config *conf)
 }
 
 static struct uart_config default_uart_config[] = {
-	{ 115200, 8, 'N', 1 },
+	{ "/dev/ttyUSB0", 115200, 8, 'N', 1 },
 };
 /**
  * `set_port` - set the port

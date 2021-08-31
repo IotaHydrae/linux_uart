@@ -1,5 +1,11 @@
 #include "../uart_utils.h"
 
+#ifdef DEBUG
+#define debug_info(msg) fprintf(stderr, "%s: %s\n", __func__, msg)
+#else
+#define debug_info(msg)
+#endif
+
 int main(int argc, char **argv)
 {
     /* Usage: ./serial_sw <ttyN> text */
@@ -25,8 +31,14 @@ int main(int argc, char **argv)
         return -1;
     }
 
+	struct uart_config myconfig;
+	myconfig.baud_rate=115200;
+	myconfig.data_bit=8;
+	myconfig.pairty='N';
+	myconfig.stop_bit=1;
+
     /* Setting the struct termios */
-    ret = set_port(fd, 115200, 8, 'N', 1);
+    ret = set_port(fd, &myconfig);
     if (ret < 0) {
         debug_info("Error on setting port.");
     }
