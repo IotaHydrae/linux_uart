@@ -28,12 +28,16 @@ all:
 
 install:
 	@echo "Installing..."
+	sudo cp ./linux-uart.conf /etc/ld.so.conf.d/
 	sudo cp ./libuartutils.so $(PATH_INSTALL_LIB)
+	sudo ldconfig
 	sudo cp ./tests/serial_rw $(PATH_INSTALL_BIN)
 
 uninstall:
 	@echo "Uninstalling..."
+	sudo rm -f /etc/ld.so.conf.d/linux-uart.conf
 	sudo rm -f $(PATH_INSTALL_LIB)libuartutils.so
+	sudo ldconfig
 	sudo rm -f $(PATH_INSTALL_BIN)serial_rw
 
 clean:

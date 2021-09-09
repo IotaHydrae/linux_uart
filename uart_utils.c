@@ -242,6 +242,7 @@ uint8_t open_port(char *port)
     if (fd < 0) {
         /* Could not open the port */
         perror("open_port: Unable to open port");
+        exit(-1);
     } else {
         status = fcntl(fd, F_SETFL, 0);		/* Setting file to block mode. */
     }
@@ -398,12 +399,14 @@ int main(int argc, char **argv)
         debug_info("Error on setting port.");
     }
 
+    sleep(1);
+
     //Reading raw data from GPS Module.
     while (1) {
         ret = read(fd, r_buf, sizeof(r_buf));
         printf("\nRev:%s", r_buf);
+        sleep(1);
     }
     close(fd);
     return 0;
 }
-
