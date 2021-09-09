@@ -45,8 +45,10 @@ int main(int argc, char **argv)
 
     //Reading raw data from GPS Module.
     while (1) {
+	sleep(1);
         ret = read(fd, r_buf, sizeof(r_buf));
         printf("\nRev:%s", r_buf);
+
     }
     close(fd);
     return 0;
